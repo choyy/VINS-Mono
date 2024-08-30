@@ -36,7 +36,7 @@ Visualization Manager:
   Class: ""
   Displays:
     - Alpha: 0.5
-      Cell Size: 1
+      Cell Size: 0.1
       Class: rviz/Grid
       Color: 130; 130; 130
       Enabled: true
@@ -55,9 +55,9 @@ Visualization Manager:
       Value: true
     - Class: rviz/Axes
       Enabled: true
-      Length: 1
+      Length: 0.1
       Name: Axes
-      Radius: 0.100000001
+      Radius: 0.0100000001
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
@@ -462,16 +462,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 20.9684067
+      Distance: 2
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
-        Stereo Focal Distance: 1
+        Stereo Focal Distance: 0.4
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -2.7069304
-        Y: -1.26974416
-        Z: 2.1410624e-05
+        X: 0
+        Y: 0
+        Z: 0
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
