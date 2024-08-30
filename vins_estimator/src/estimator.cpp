@@ -1,4 +1,5 @@
 #include "estimator.h"
+#include "pnp_solver.h"
 
 Estimator::Estimator(): f_manager{Rs}
 {
@@ -310,8 +311,8 @@ bool Estimator::initialStructure()
         cv::eigen2cv(P_inital, t);
 
         frame_it->second.is_key_frame = false;
-        vector<cv::Point3f> pts_3_vector;
-        vector<cv::Point2f> pts_2_vector;
+        vector<Eigen::Vector3d> pts_3_vector;
+        vector<Eigen::Vector2d> pts_2_vector;
         for (auto &id_pts : frame_it->second.points)
         {
             int feature_id = id_pts.first;
@@ -321,32 +322,29 @@ bool Estimator::initialStructure()
                 if(it != sfm_tracked_points.end())
                 {
                     Vector3d world_pts = it->second;
-                    cv::Point3f pts_3(world_pts(0), world_pts(1), world_pts(2));
+                    Eigen::Vector3d pts_3(world_pts(0), world_pts(1), world_pts(2));
                     pts_3_vector.push_back(pts_3);
                     Vector2d img_pts = i_p.second.head<2>();
-                    cv::Point2f pts_2(img_pts(0), img_pts(1));
+                    Eigen::Vector2d pts_2(img_pts(0), img_pts(1));
                     pts_2_vector.push_back(pts_2);
                 }
             }
         }
-        cv::Mat K = (cv::Mat_<double>(3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1);     
         if(pts_3_vector.size() < 6)
         {
             cout << "pts_3_vector size " << pts_3_vector.size() << endl;
             ROS_DEBUG("Not enough points for solve pnp !");
             return false;
         }
-        if (! cv::solvePnP(pts_3_vector, pts_2_vector, K, D, rvec, t, 1))
+        Eigen::Matrix3d K { (Eigen::Matrix3d() << 1, 0, 0, 0, 1, 0, 0, 0, 1).finished() };
+        Eigen::Matrix3d R_pnp,tmp_R_pnp;
+        Eigen::Vector3d T_pnp;
+        if (!solvePnPbyParaPersGN(K, pts_3_vector, pts_2_vector, R_pnp, T_pnp))
         {
             ROS_DEBUG("solve pnp fail!");
             return false;
         }
-        cv::Rodrigues(rvec, r);
-        MatrixXd R_pnp,tmp_R_pnp;
-        cv::cv2eigen(r, tmp_R_pnp);
-        R_pnp = tmp_R_pnp.transpose();
-        MatrixXd T_pnp;
-        cv::cv2eigen(t, T_pnp);
+        R_pnp = R_pnp.transpose();
         T_pnp = R_pnp * (-T_pnp);
         frame_it->second.R = R_pnp * RIC[0].transpose();
         frame_it->second.T = T_pnp;
